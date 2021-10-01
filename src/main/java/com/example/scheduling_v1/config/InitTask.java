@@ -2,6 +2,7 @@ package com.example.scheduling_v1.config;
 
 import com.example.scheduling_v1.repository.ScheduledRepository;
 import com.example.scheduling_v1.model.ScheduledTask;
+import com.example.scheduling_v1.util.ScheduleUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.ApplicationContext;
@@ -21,22 +22,17 @@ import java.util.concurrent.ScheduledFuture;
  */
 @Component
 public class InitTask implements CommandLineRunner, Ordered {
-    public static Map<Integer, ScheduledFuture> scheduledFutureMap = new HashMap<>();
+    @Autowired
+    ScheduleUtils scheduleUtils;
     @Autowired
     ScheduledRepository scheduledRepository;
-    @Autowired
-    ThreadPoolTaskScheduler pool;
-    @Autowired
-    ApplicationContext context;
 
     @Override
     public void run(String... args) throws Exception {
         List<ScheduledTask> scheduledTasks = scheduledRepository.findAll();
-        for (ScheduledTask s : scheduledTasks) {
-            if(s.getStatus()){
-                ScheduleRunnable scheduleRunnable = new ScheduleRunnable(context,s.getTaskName(),s.getParam(),s.getMethod());
-                ScheduledFuture<?> scheduledFuture = pool.schedule(scheduleRunnable, new CronTrigger(s.getCronExpres()));
-                scheduledFutureMap.put(s.getId(),scheduledFuture);
+        for (ScheduledTask task : scheduledTasks) {
+            if(task.getStatus()){
+                scheduleUtils.addTaskTtoPool(task);
             }
         }
     }

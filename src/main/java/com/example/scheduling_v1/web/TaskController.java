@@ -5,10 +5,9 @@ import com.example.scheduling_v1.model.ScheduledTask;
 import com.example.scheduling_v1.service.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 public class TaskController {
@@ -25,8 +24,24 @@ public class TaskController {
 
     @DeleteMapping("/task/{id}")
     public Resp deleteTask(@PathVariable Integer id){
-        taskService.deleteById(id);
+        try {
+            taskService.deleteById(id);
+        } catch (Exception e) {
+           return Resp.Error(HttpStatus.BAD_REQUEST.value(), "删除任务失败，请确定是否有次任务");
+        }
         return Resp.Ok("删除任务成功");
+    }
+    @PutMapping("/task/{id}")
+    public Resp updateTask(@PathVariable Integer id){
+        if(taskService.changeStatus(id)){
+            return  Resp.Ok("更改任务状态成功");
+        }
+        return Resp.Error(HttpStatus.BAD_REQUEST.value(), "更改任务状态失败，请确定是否有次任务");
+    }
+    @GetMapping("/tasks")
+    public Resp findAllTasks(){
+        List<ScheduledTask> tasks = taskService.findAll();
+        return Resp.Ok("查找所有任务成功",tasks);
     }
 
 }
