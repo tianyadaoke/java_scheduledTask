@@ -7,14 +7,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
+@CrossOrigin
 public class TaskController {
     @Autowired
     TaskService taskService;
     @PostMapping("/task")
-    public Resp addTask(ScheduledTask task){
+    public Resp addTask(@RequestBody ScheduledTask task){
         int id = taskService.addTask(task);
         if (id==0) {
             return  Resp.Error(HttpStatus.BAD_REQUEST.value(), "加入任务失败");

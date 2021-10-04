@@ -4,15 +4,19 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.validation.constraints.NotNull;
 
 @Entity
 public class ScheduledTask {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
+    @NotNull(message = "不能为空")
     private String taskName;
+    @NotNull(message = "不能为空")
     private String method;
     private String param;
+    @NotNull(message = "不能为空")
     private String cronExpres;
     //0为不可用，1为可用
     private Boolean status = Boolean.TRUE;

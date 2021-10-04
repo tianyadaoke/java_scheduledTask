@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <!-- 引入组件库 -->
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+
+</head>
+
+<body>
+    <div id="app">
+        <el-table :data="tasks" style="width: 100%">
+            <el-table-column prop="id" label="编号">
+            </el-table-column>
+            <el-table-column prop="taskName" label="任务名称">
+            </el-table-column>
+            <el-table-column prop="method" label="方法">
+            </el-table-column>
+            <el-table-column prop="param" label="参数">
+            </el-table-column>
+            <el-table-column prop="status" label="状态">
+            </el-table-column>
+            <el-table-column prop="cronExpres" label="cron表达式">
+            </el-table-column>
+            <el-table-column label="操作">
+                <template slot-scope="scope">
+                    <el-button type="danger" @click='deleteTask(scope.row.id)'>删除</el-button>
+                </template>
+
+            </el-table-column>
+        </el-table>
+        <el-input v-model="task.taskName" placeholder="请输入任务名称" @blur="checkTaskName"></el-input>
+        <el-input v-model="task.method" placeholder="请输入方法" @blur="checkTaskMethod"></el-input>
+        <el-input v-model="task.param" placeholder="请输入参数"></el-input>
+        <el-input v-model="task.cronExpres" placeholder="请输入cron表达式" @blur="checkTaskCron"></el-input>
+        <el-button @click="addTask">提交任务</el-button>
+    </div>
+    <script>
+        var BASE_URL = "http://localhost:8080"
+        var app = new Vue({
+            el: '#app',
+            data: {
+                tasks: [],
+                task: {
+                    taskName: 'testComponent',
+                    method: 'say',
+                    param: ':parameter',
+                    cronExpres: '0/5 * * * * *'
+                },
+                checkStatus: {
+                    nameStatus: true,
+                    methodStatus: true,
+                    cronStatus: true
+                }
+            },
+            methods: {
+                deleteTask(id) {
+                    console.log('删除id为', id, '的任务')
+                    axios.delete(BASE_URL + '/task/' + id)
+                        .then(function (response) {
+                            console.log('删除任务成功,刷新页面')
+                            location.reload()
+                        })
+                        .catch(function (error) {
+                            console.log(error)
+                        })
+                },
+                addTask() {
+                    if (this.checkStatus.nameStatus && this.checkStatus.methodStatus && this.checkStatus.cronStatus) {
+                        console.log('可以添加任务')
+                        axios.post(BASE_URL+'/task',this.task)
+                        .then(function (response) {
+                            console.log('添加任务成功,刷新页面')
+                            location.reload()
+                        })
+
+                    } else {
+                        this.$message.error('添加消息出错');
+                    }
+
+                },
+                checkTaskName() {
+                    if (this.task.taskName.length <= 0) {
+                        this.$message({
+                            message: '任务名称不能为空',
+                            type: 'warning',
+                            duration: 1000
+                        });
+                        this.checkStatus.nameStatus = false
+                    } else {
+                        this.checkStatus.nameStatus = true
+                    }
+                },
+                checkTaskMethod() {
+                    if (this.task.method.length <= 0) {
+                        this.$message({
+                            message: '方法不能为空',
+                            type: 'warning',
+                            duration: 1000
+                        });
+                        this.checkStatus.methodStatus = false
+                    } else {
+                        this.checkStatus.methodStatus = true
+                    }
+                },
+                checkTaskCron() {
+                    if (this.task.cronExpres.length <= 0) {
+                        this.$message({
+                            message: 'cron表达式不能为空',
+                            type: 'warning',
+                            duration: 1000
+                        });
+                        this.checkStatus.cronStatus = false
+                    } else {
+                        this.checkStatus.cronStatus = true
+                    }
+                }
+            },
+            created() {
+                axios.get(BASE_URL + '/tasks')
+                    .then(function (response) {
+                        console.log(response.data)
+                        app.tasks = response.data.data
+                    })
+                    .catch(function (error) {
+                        console.log(error)
+                    })
+            }
+
+        })
+    </script>
+</body>
+
+</html>
